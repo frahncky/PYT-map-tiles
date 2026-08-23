@@ -1,0 +1,27 @@
+name: Temporary export Mesh artifact
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: github.head_ref == 'temp-fetch-mesh-images'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: temp-fetch-mesh-images
+      - name: Pack Mesh images
+        run: |
+          test -d mesh-small
+          test -d mesh-sheets
+          tar -czf mesh-images.tar.gz mesh-small mesh-sheets
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mesh-images
+          path: mesh-images.tar.gz
+          if-no-files-found: error
