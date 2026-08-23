@@ -1,0 +1,50 @@
+name: Temporary rechunk Mesh sheets
+
+on:
+  push:
+    branches:
+      - temp-fetch-mesh-images
+
+permissions:
+  contents: write
+
+jobs:
+  rechunk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: temp-fetch-mesh-images
+          fetch-depth: 0
+      - name: Create 10000-char hex chunks
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf mesh-hex-large
+          mkdir -p mesh-hex-large
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          out=Path('mesh-hex-large')
+          manifest=[]
+          chunk=10000
+          for p in sorted(Path('mesh-sheets').glob('*.jpg')):
+              raw=p.read_bytes(); hx=raw.hex().upper()
+              parts=[hx[i:i+chunk] for i in range(0,len(hx),chunk)]
+              dims=subprocess.check_output(['identify','-format','%w %h',str(p)],text=True).strip()
+              for n,part in enumerate(parts,1):
+                  (out/f'{p.stem}-{n:03d}.hex').write_text(part+'\n')
+              manifest.append(f'{p.stem} {dims} {len(parts)} {len(raw)}')
+          (out/'MANIFEST.txt').write_text('\n'.join(manifest)+'\n')
+          PY
+          cat mesh-hex-large/MANIFEST.txt
+      - name: Commit chunks
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- mesh-hex-large
+          if ! git diff --cached --quiet; then
+            git commit -m 'Temporary: create large Mesh hex chunks'
+            git push origin HEAD:temp-fetch-mesh-images
+          fi
