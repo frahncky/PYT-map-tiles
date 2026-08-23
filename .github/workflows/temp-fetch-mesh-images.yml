@@ -82,7 +82,7 @@ jobs:
           import subprocess
           out = Path('mesh-hex-chunks')
           manifest=[]
-          chunk=4500
+          chunk=10000
           for p in sorted(Path('mesh-sheets').glob('*.jpg')):
               raw=p.read_bytes()
               hx=raw.hex().upper()
