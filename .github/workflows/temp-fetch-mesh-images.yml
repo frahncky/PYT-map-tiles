@@ -66,20 +66,19 @@ jobs:
           getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-2-1024x696.png' 'ris-2.png'
           getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-3-1024x811.png' 'ris-3.png'
           getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-4-1024x607.png' 'ris-4.png'
-
           echo "FAILED=$failed" | tee -a mesh-import/REPORT.txt
 
       - name: Optimize copies for slides
         shell: bash
         run: |
           set -e
-          command -v convert >/dev/null || sudo apt-get update && sudo apt-get install -y imagemagick
+          command -v convert >/dev/null || { sudo apt-get update; sudo apt-get install -y imagemagick; }
           rm -rf mesh-small
           mkdir -p mesh-small
           for f in mesh-import/*.{png,jpg,jpeg}; do
             [ -e "$f" ] || continue
             b="$(basename "${f%.*}")"
-            convert "$f" -background white -alpha remove -alpha off -resize '760x760>' -strip -sampling-factor 4:2:0 -interlace Plane -quality 52 "mesh-small/${b}.jpg"
+            convert "$f" -background white -alpha remove -alpha off -resize '640x640>' -strip -sampling-factor 4:2:0 -interlace Plane -quality 38 "mesh-small/${b}.jpg"
           done
           : > mesh-small/SIZES.txt
           find mesh-small -maxdepth 1 -type f -name '*.jpg' -printf '%f %s\n' | sort | tee mesh-small/SIZES.txt
