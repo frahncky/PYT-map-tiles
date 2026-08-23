@@ -21,7 +21,7 @@ jobs:
         shell: bash
         run: |
           set -u
-          mkdir -p mesh-import
+          mkdir -p mesh-import mesh-small
           : > mesh-import/REPORT.txt
           UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131 Safari/537.36'
           REF='https://meshengenharia.com/category/equipamentos/'
@@ -68,17 +68,31 @@ jobs:
           getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-4-1024x607.png' 'ris-4.png'
 
           echo "FAILED=$failed" | tee -a mesh-import/REPORT.txt
-          file mesh-import/* | tee -a mesh-import/REPORT.txt || true
+
+      - name: Optimize copies for slides
+        shell: bash
+        run: |
+          set -e
+          command -v convert >/dev/null || sudo apt-get update && sudo apt-get install -y imagemagick
+          rm -rf mesh-small
+          mkdir -p mesh-small
+          for f in mesh-import/*.{png,jpg,jpeg}; do
+            [ -e "$f" ] || continue
+            b="$(basename "${f%.*}")"
+            convert "$f" -background white -alpha remove -alpha off -resize '760x760>' -strip -sampling-factor 4:2:0 -interlace Plane -quality 52 "mesh-small/${b}.jpg"
+          done
+          : > mesh-small/SIZES.txt
+          find mesh-small -maxdepth 1 -type f -name '*.jpg' -printf '%f %s\n' | sort | tee mesh-small/SIZES.txt
 
       - name: Commit downloaded images
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- mesh-import
+          git add -- mesh-import mesh-small
           if git diff --cached --quiet; then
             echo 'Nothing to commit'
           else
-            git commit -m 'Temporary: fetch Mesh images'
+            git commit -m 'Temporary: fetch and optimize Mesh images'
             git push origin HEAD:temp-fetch-mesh-images
           fi
