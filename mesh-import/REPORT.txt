@@ -1,0 +1,54 @@
+OK trafo-acessorios-1.png
+OK trafo-acessorios-2.png
+OK trafo-acessorios-3.png
+OK trafo-resfriamento.png
+OK reator-ar.png
+OK reator-derivacao.png
+OK reator-limitador.png
+OK reatores-aplicacoes.png
+OK regulador-ligacao-mono.png
+OK regulador-ligacao-delta.png
+OK regulador-ligacao-estrela.png
+OK regulador-32-foto.png
+OK regulador-32-esquema.png
+OK distribuicao-trafo-subestacao.png
+OK distribuicao-trafo-poste.jpg
+OK distribuicao-disjuntor.png
+OK distribuicao-chave-fusivel.png
+OK distribuicao-religador.png
+OK distribuicao-seccionalizador.png
+OK distribuicao-regulador.png
+OK distribuicao-banco-capacitor.jpg
+OK distribuicao-para-raios.png
+OK ris-1.png
+OK ris-2.png
+OK ris-3.png
+OK ris-4.png
+FAILED=0
+mesh-import/REPORT.txt:                        ASCII text
+mesh-import/distribuicao-banco-capacitor.jpg:  JPEG image data, Exif standard: [TIFF image data, big-endian, direntries=8, description=Pole-mounted capacitor bank, orientation=upper-left, xresolution=98, yresolution=106, resolutionunit=2, software=Adobe Photoshop CS6 (Windows), datetime=2018:07:12 08:19:28], baseline, precision 8, 500x500, components 3
+mesh-import/distribuicao-chave-fusivel.png:    PNG image data, 1024 x 540, 8-bit/color RGBA, non-interlaced
+mesh-import/distribuicao-disjuntor.png:        PNG image data, 591 x 443, 8-bit/color RGBA, non-interlaced
+mesh-import/distribuicao-para-raios.png:       PNG image data, 1024 x 681, 8-bit/color RGB, non-interlaced
+mesh-import/distribuicao-regulador.png:        PNG image data, 176 x 340, 8-bit/color RGBA, non-interlaced
+mesh-import/distribuicao-religador.png:        PNG image data, 1024 x 459, 8-bit/color RGBA, non-interlaced
+mesh-import/distribuicao-seccionalizador.png:  PNG image data, 1024 x 798, 8-bit/color RGBA, non-interlaced
+mesh-import/distribuicao-trafo-poste.jpg:      JPEG image data, JFIF standard 1.01, resolution (DPI), density 300x300, segment length 16, Exif Standard: [TIFF image data, little-endian, direntries=16, height=3840, bps=206, PhotometricInterpretation=RGB, description=Transformadores s\303\243o dispositivos usados para abaixar ou aumentar a tens\303\243o e a corrente el\303\251tricas. Os transformadores consist, manufacturer=Canon, model=Canon EOS 5D Mark III, orientation=upper-left, width=5760], baseline, precision 8, 1024x683, components 3
+mesh-import/distribuicao-trafo-subestacao.png: PNG image data, 1000 x 600, 8-bit/color RGBA, non-interlaced
+mesh-import/reator-ar.png:                     PNG image data, 1024 x 844, 8-bit/color RGBA, non-interlaced
+mesh-import/reator-derivacao.png:              PNG image data, 526 x 397, 8-bit colormap, non-interlaced
+mesh-import/reator-limitador.png:              PNG image data, 714 x 530, 8-bit/color RGBA, non-interlaced
+mesh-import/reatores-aplicacoes.png:           PNG image data, 1024 x 370, 8-bit/color RGBA, non-interlaced
+mesh-import/regulador-32-esquema.png:          PNG image data, 1024 x 543, 8-bit/color RGBA, non-interlaced
+mesh-import/regulador-32-foto.png:             PNG image data, 888 x 1024, 8-bit/color RGBA, non-interlaced
+mesh-import/regulador-ligacao-delta.png:       PNG image data, 1024 x 586, 8-bit/color RGBA, non-interlaced
+mesh-import/regulador-ligacao-estrela.png:     PNG image data, 1024 x 557, 8-bit/color RGBA, non-interlaced
+mesh-import/regulador-ligacao-mono.png:        PNG image data, 1024 x 536, 8-bit/color RGBA, non-interlaced
+mesh-import/ris-1.png:                         PNG image data, 896 x 1024, 8-bit/color RGBA, non-interlaced
+mesh-import/ris-2.png:                         PNG image data, 1024 x 696, 8-bit/color RGBA, non-interlaced
+mesh-import/ris-3.png:                         PNG image data, 1024 x 811, 8-bit gray+alpha, non-interlaced
+mesh-import/ris-4.png:                         PNG image data, 1024 x 607, 8-bit gray+alpha, non-interlaced
+mesh-import/trafo-acessorios-1.png:            PNG image data, 990 x 607, 8-bit/color RGBA, non-interlaced
+mesh-import/trafo-acessorios-2.png:            PNG image data, 1024 x 621, 8-bit/color RGBA, non-interlaced
+mesh-import/trafo-acessorios-3.png:            PNG image data, 966 x 727, 8-bit/color RGBA, non-interlaced
+mesh-import/trafo-resfriamento.png:            PNG image data, 1024 x 1003, 8-bit/color RGBA, non-interlaced
