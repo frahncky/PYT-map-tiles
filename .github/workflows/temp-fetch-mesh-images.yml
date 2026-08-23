@@ -21,25 +21,11 @@ jobs:
         shell: bash
         run: |
           set -u
-          mkdir -p mesh-import mesh-small
+          mkdir -p mesh-import
           : > mesh-import/REPORT.txt
           UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131 Safari/537.36'
           REF='https://meshengenharia.com/category/equipamentos/'
-          failed=0
-          getimg() {
-            url="$1"; out="$2"; rc=0
-            curl --http1.1 -L --fail --retry 4 --retry-delay 2 --connect-timeout 20 --max-time 120 \
-              -A "$UA" -e "$REF" -H 'Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
-              "$url" -o "mesh-import/$out" || rc=$?
-            if [ "$rc" -eq 0 ] && [ -s "mesh-import/$out" ]; then
-              echo "OK $out" | tee -a mesh-import/REPORT.txt
-            else
-              rm -f "mesh-import/$out"
-              echo "FAIL($rc) $out $url" | tee -a mesh-import/REPORT.txt
-              failed=$((failed+1))
-            fi
-          }
-
+          getimg() { curl --http1.1 -L --fail --retry 4 --retry-delay 2 --connect-timeout 20 --max-time 120 -A "$UA" -e "$REF" -H 'Accept: image/*,*/*;q=0.8' "$1" -o "mesh-import/$2"; }
           getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/A-1.png' 'trafo-acessorios-1.png'
           getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/image-15-1024x621.png' 'trafo-acessorios-2.png'
           getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/A-3.png' 'trafo-acessorios-3.png'
@@ -66,32 +52,48 @@ jobs:
           getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-2-1024x696.png' 'ris-2.png'
           getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-3-1024x811.png' 'ris-3.png'
           getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-4-1024x607.png' 'ris-4.png'
-          echo "FAILED=$failed" | tee -a mesh-import/REPORT.txt
 
-      - name: Optimize copies for slides
+      - name: Build compact sheets and base64 text
         shell: bash
         run: |
           set -e
-          command -v convert >/dev/null || { sudo apt-get update; sudo apt-get install -y imagemagick; }
-          rm -rf mesh-small
-          mkdir -p mesh-small
-          for f in mesh-import/*.{png,jpg,jpeg}; do
-            [ -e "$f" ] || continue
-            b="$(basename "${f%.*}")"
-            convert "$f" -background white -alpha remove -alpha off -resize '640x640>' -strip -sampling-factor 4:2:0 -interlace Plane -quality 38 "mesh-small/${b}.jpg"
+          command -v montage >/dev/null || { sudo apt-get update; sudo apt-get install -y imagemagick; }
+          sudo apt-get update -qq && sudo apt-get install -y -qq jpegoptim
+          rm -rf mesh-sheets mesh-sheets-b64
+          mkdir -p mesh-sheets mesh-sheets-b64
+          montage mesh-import/trafo-acessorios-1.png mesh-import/trafo-acessorios-2.png mesh-import/trafo-acessorios-3.png -background white -geometry '430x300+8+8' -tile 2x2 /tmp/a.png
+          convert /tmp/a.png -resize '1050x720>' -background white -alpha remove -quality 48 mesh-sheets/trafo-acessorios.jpg
+          convert mesh-import/trafo-resfriamento.png -resize '720x720>' -background white -alpha remove -quality 48 mesh-sheets/trafo-resfriamento.jpg
+          montage mesh-import/reator-ar.png mesh-import/reator-derivacao.png mesh-import/reator-limitador.png mesh-import/reatores-aplicacoes.png -background white -geometry '400x280+8+8' -tile 2x2 /tmp/r.png
+          convert /tmp/r.png -resize '1000x700>' -background white -alpha remove -quality 46 mesh-sheets/reatores.jpg
+          montage mesh-import/ris-1.png mesh-import/ris-2.png mesh-import/ris-3.png mesh-import/ris-4.png -background white -geometry '400x280+8+8' -tile 2x2 /tmp/ris.png
+          convert /tmp/ris.png -resize '1000x700>' -background white -alpha remove -quality 46 mesh-sheets/ris.jpg
+          montage mesh-import/distribuicao-trafo-subestacao.png mesh-import/distribuicao-trafo-poste.jpg mesh-import/distribuicao-disjuntor.png mesh-import/distribuicao-chave-fusivel.png mesh-import/distribuicao-religador.png mesh-import/distribuicao-seccionalizador.png -background white -geometry '340x230+6+6' -tile 3x2 /tmp/dp.png
+          convert /tmp/dp.png -resize '1050x700>' -background white -alpha remove -quality 45 mesh-sheets/distribuicao-protecao.jpg
+          montage mesh-import/distribuicao-regulador.png mesh-import/distribuicao-banco-capacitor.jpg mesh-import/distribuicao-para-raios.png -background white -geometry '330x330+8+8' -tile 3x1 /tmp/dr.png
+          convert /tmp/dr.png -resize '1000x430>' -background white -alpha remove -quality 45 mesh-sheets/distribuicao-regulacao.jpg
+          montage mesh-import/regulador-32-foto.png mesh-import/regulador-32-esquema.png -background white -geometry '480x430+8+8' -tile 2x1 /tmp/r32.png
+          convert /tmp/r32.png -resize '1000x500>' -background white -alpha remove -quality 45 mesh-sheets/regulador-32.jpg
+          montage mesh-import/regulador-ligacao-mono.png mesh-import/regulador-ligacao-delta.png mesh-import/regulador-ligacao-estrela.png -background white -geometry '450x290+8+8' -tile 2x2 /tmp/rl.png
+          convert /tmp/rl.png -resize '1000x700>' -background white -alpha remove -quality 45 mesh-sheets/regulador-ligacoes.jpg
+          jpegoptim --strip-all --size=30000 mesh-sheets/*.jpg || true
+          : > mesh-sheets/SIZES.txt
+          for f in mesh-sheets/*.jpg; do
+            echo "$(basename "$f") $(stat -c %s "$f")" >> mesh-sheets/SIZES.txt
+            base64 -w 76 "$f" > "mesh-sheets-b64/$(basename "$f").b64"
           done
-          : > mesh-small/SIZES.txt
-          find mesh-small -maxdepth 1 -type f -name '*.jpg' -printf '%f %s\n' | sort | tee mesh-small/SIZES.txt
+          sort -o mesh-sheets/SIZES.txt mesh-sheets/SIZES.txt
+          cat mesh-sheets/SIZES.txt
 
-      - name: Commit downloaded images
+      - name: Commit assets
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- mesh-import mesh-small
+          git add -- mesh-import mesh-sheets mesh-sheets-b64
           if git diff --cached --quiet; then
             echo 'Nothing to commit'
           else
-            git commit -m 'Temporary: fetch and optimize Mesh images'
+            git commit -m 'Temporary: build Mesh figure sheets'
             git push origin HEAD:temp-fetch-mesh-images
           fi
