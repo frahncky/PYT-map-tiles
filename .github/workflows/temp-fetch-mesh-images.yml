@@ -1,0 +1,84 @@
+name: Temporary fetch Mesh images
+
+on:
+  push:
+    branches:
+      - temp-fetch-mesh-images
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: temp-fetch-mesh-images
+          fetch-depth: 0
+
+      - name: Download Mesh images
+        shell: bash
+        run: |
+          set -u
+          mkdir -p mesh-import
+          : > mesh-import/REPORT.txt
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131 Safari/537.36'
+          REF='https://meshengenharia.com/category/equipamentos/'
+          failed=0
+          getimg() {
+            url="$1"; out="$2"; rc=0
+            curl --http1.1 -L --fail --retry 4 --retry-delay 2 --connect-timeout 20 --max-time 120 \
+              -A "$UA" -e "$REF" -H 'Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+              "$url" -o "mesh-import/$out" || rc=$?
+            if [ "$rc" -eq 0 ] && [ -s "mesh-import/$out" ]; then
+              echo "OK $out" | tee -a mesh-import/REPORT.txt
+            else
+              rm -f "mesh-import/$out"
+              echo "FAIL($rc) $out $url" | tee -a mesh-import/REPORT.txt
+              failed=$((failed+1))
+            fi
+          }
+
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/A-1.png' 'trafo-acessorios-1.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/image-15-1024x621.png' 'trafo-acessorios-2.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/A-3.png' 'trafo-acessorios-3.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/ilustra-resfriamento-1024x1003.png' 'trafo-resfriamento.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/Imagem1-1024x844.png' 'reator-ar.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/Imagem2.png' 'reator-derivacao.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/Imagem3.png' 'reator-limitador.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/image-4-1024x370.png' 'reatores-aplicacoes.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/01/Figura-1-1024x536.png' 'regulador-ligacao-mono.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/01/Figura-2-1024x586.png' 'regulador-ligacao-delta.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/01/Figura-3-1024x557.png' 'regulador-ligacao-estrela.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/12/Figura-1-2-888x1024.png' 'regulador-32-foto.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/12/Figura-2-3-1024x543.png' 'regulador-32-esquema.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-01.png' 'distribuicao-trafo-subestacao.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-02-1024x683.jpg' 'distribuicao-trafo-poste.jpg'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-03.png' 'distribuicao-disjuntor.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-04-1024x540.png' 'distribuicao-chave-fusivel.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-09-1024x459.png' 'distribuicao-religador.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-10-1024x798.png' 'distribuicao-seccionalizador.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-11.png' 'distribuicao-regulador.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-12.jpg' 'distribuicao-banco-capacitor.jpg'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-13-1024x681.png' 'distribuicao-para-raios.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-1-896x1024.png' 'ris-1.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-2-1024x696.png' 'ris-2.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-3-1024x811.png' 'ris-3.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-4-1024x607.png' 'ris-4.png'
+
+          echo "FAILED=$failed" | tee -a mesh-import/REPORT.txt
+          file mesh-import/* | tee -a mesh-import/REPORT.txt || true
+
+      - name: Commit downloaded images
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- mesh-import
+          if git diff --cached --quiet; then
+            echo 'Nothing to commit'
+          else
+            git commit -m 'Temporary: fetch Mesh images'
+            git push origin HEAD:temp-fetch-mesh-images
+          fi
