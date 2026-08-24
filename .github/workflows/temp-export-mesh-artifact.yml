@@ -1,4 +1,4 @@
-name: Temporary export Mesh artifact
+name: Temporary export Mesh more images
 
 on:
   pull_request:
@@ -9,19 +9,37 @@ permissions:
 
 jobs:
   export:
-    if: github.head_ref == 'temp-fetch-mesh-images'
+    if: github.head_ref == 'temp-mesh-more-20260824'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: temp-fetch-mesh-images
-      - name: Pack Mesh images
+      - name: Download Mesh figures
+        shell: bash
         run: |
-          test -d mesh-small
-          test -d mesh-sheets
-          tar -czf mesh-images.tar.gz mesh-small mesh-sheets
+          set -euo pipefail
+          mkdir -p mesh-more
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36'
+          getimg() {
+            curl --http1.1 -L --fail --retry 4 --retry-delay 2 -A "$UA" \
+              -e 'https://meshengenharia.com/' "$1" -o "mesh-more/$2"
+            test -s "mesh-more/$2"
+          }
+          getimg 'https://meshengenharia.com/wp-content/uploads/2022/11/Imagem3-1.png' 'subestacao-alvenaria.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2022/11/Imagem4-1.png' 'subestacao-blindada.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/02/image-115.png' 'seccionadora-sem-carga.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/02/image-118.png' 'seccionadora-sob-carga.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2022/12/C0560-01.png' 'tc.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2022/11/Imagem6.png' 'tc-tp.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/03/image-88-1024x722.png' 'para-raio-mt.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2022/11/Imagem4.png' 'disjuntor-mt.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2022/11/Imagem9a-1024x378.png' 'painel-protecao.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-05.png' 'loadbuster.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-06.png' 'chave-faca.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-07.png' 'chave-fusivel-repetidora.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-08-1-1024x663.png' 'chave-fusivel-repetidora2.png'
+          file mesh-more/*
+          tar -czf mesh-more-images.tar.gz mesh-more
       - uses: actions/upload-artifact@v4
         with:
-          name: mesh-images
-          path: mesh-images.tar.gz
+          name: mesh-more-images
+          path: mesh-more-images.tar.gz
           if-no-files-found: error
