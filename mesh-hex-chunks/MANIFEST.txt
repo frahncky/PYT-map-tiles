@@ -1,0 +1,8 @@
+distribuicao-protecao 1050 481 5 22969
+distribuicao-regulacao 1000 333 5 23467
+reatores 832 592 5 22612
+regulador-32 992 446 5 21420
+regulador-ligacoes 932 612 5 23300
+ris 832 592 5 22556
+trafo-acessorios 892 632 5 22475
+trafo-resfriamento 720 705 4 18478

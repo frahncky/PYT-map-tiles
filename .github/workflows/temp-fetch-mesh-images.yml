@@ -1,0 +1,109 @@
+name: Temporary fetch Mesh images
+
+on:
+  push:
+    branches:
+      - temp-fetch-mesh-images
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: temp-fetch-mesh-images
+          fetch-depth: 0
+
+      - name: Download Mesh images
+        shell: bash
+        run: |
+          set -u
+          mkdir -p mesh-import
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131 Safari/537.36'
+          REF='https://meshengenharia.com/category/equipamentos/'
+          getimg() { curl --http1.1 -L --fail --retry 4 --retry-delay 2 --connect-timeout 20 --max-time 120 -A "$UA" -e "$REF" -H 'Accept: image/*,*/*;q=0.8' "$1" -o "mesh-import/$2"; }
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/A-1.png' 'trafo-acessorios-1.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/image-15-1024x621.png' 'trafo-acessorios-2.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/A-3.png' 'trafo-acessorios-3.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/ilustra-resfriamento-1024x1003.png' 'trafo-resfriamento.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/Imagem1-1024x844.png' 'reator-ar.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/Imagem2.png' 'reator-derivacao.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/Imagem3.png' 'reator-limitador.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/02/image-4-1024x370.png' 'reatores-aplicacoes.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/01/Figura-1-1024x536.png' 'regulador-ligacao-mono.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/01/Figura-2-1024x586.png' 'regulador-ligacao-delta.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2024/01/Figura-3-1024x557.png' 'regulador-ligacao-estrela.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/12/Figura-1-2-888x1024.png' 'regulador-32-foto.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/12/Figura-2-3-1024x543.png' 'regulador-32-esquema.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-01.png' 'distribuicao-trafo-subestacao.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-02-1024x683.jpg' 'distribuicao-trafo-poste.jpg'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-03.png' 'distribuicao-disjuntor.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-04-1024x540.png' 'distribuicao-chave-fusivel.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-09-1024x459.png' 'distribuicao-religador.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-10-1024x798.png' 'distribuicao-seccionalizador.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-11.png' 'distribuicao-regulador.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-12.jpg' 'distribuicao-banco-capacitor.jpg'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/11/Figura-13-1024x681.png' 'distribuicao-para-raios.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-1-896x1024.png' 'ris-1.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-2-1024x696.png' 'ris-2.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-3-1024x811.png' 'ris-3.png'
+          getimg 'https://meshengenharia.com/wp-content/uploads/2023/10/Prancheta-4-1024x607.png' 'ris-4.png'
+
+      - name: Build compact sheets
+        shell: bash
+        run: |
+          set -e
+          command -v montage >/dev/null || { sudo apt-get update; sudo apt-get install -y imagemagick; }
+          sudo apt-get update -qq && sudo apt-get install -y -qq jpegoptim
+          rm -rf mesh-sheets mesh-hex-chunks
+          mkdir -p mesh-sheets mesh-hex-chunks
+          montage mesh-import/trafo-acessorios-1.png mesh-import/trafo-acessorios-2.png mesh-import/trafo-acessorios-3.png -background white -geometry '430x300+8+8' -tile 2x2 /tmp/a.png
+          convert /tmp/a.png -resize '1050x720>' -background white -alpha remove -quality 46 mesh-sheets/trafo-acessorios.jpg
+          convert mesh-import/trafo-resfriamento.png -resize '720x720>' -background white -alpha remove -quality 46 mesh-sheets/trafo-resfriamento.jpg
+          montage mesh-import/reator-ar.png mesh-import/reator-derivacao.png mesh-import/reator-limitador.png mesh-import/reatores-aplicacoes.png -background white -geometry '400x280+8+8' -tile 2x2 /tmp/r.png
+          convert /tmp/r.png -resize '1000x700>' -background white -alpha remove -quality 44 mesh-sheets/reatores.jpg
+          montage mesh-import/ris-1.png mesh-import/ris-2.png mesh-import/ris-3.png mesh-import/ris-4.png -background white -geometry '400x280+8+8' -tile 2x2 /tmp/ris.png
+          convert /tmp/ris.png -resize '1000x700>' -background white -alpha remove -quality 44 mesh-sheets/ris.jpg
+          montage mesh-import/distribuicao-trafo-subestacao.png mesh-import/distribuicao-trafo-poste.jpg mesh-import/distribuicao-disjuntor.png mesh-import/distribuicao-chave-fusivel.png mesh-import/distribuicao-religador.png mesh-import/distribuicao-seccionalizador.png -background white -geometry '340x230+6+6' -tile 3x2 /tmp/dp.png
+          convert /tmp/dp.png -resize '1050x700>' -background white -alpha remove -quality 43 mesh-sheets/distribuicao-protecao.jpg
+          montage mesh-import/distribuicao-regulador.png mesh-import/distribuicao-banco-capacitor.jpg mesh-import/distribuicao-para-raios.png -background white -geometry '330x330+8+8' -tile 3x1 /tmp/dr.png
+          convert /tmp/dr.png -resize '1000x430>' -background white -alpha remove -quality 43 mesh-sheets/distribuicao-regulacao.jpg
+          montage mesh-import/regulador-32-foto.png mesh-import/regulador-32-esquema.png -background white -geometry '480x430+8+8' -tile 2x1 /tmp/r32.png
+          convert /tmp/r32.png -resize '1000x500>' -background white -alpha remove -quality 43 mesh-sheets/regulador-32.jpg
+          montage mesh-import/regulador-ligacao-mono.png mesh-import/regulador-ligacao-delta.png mesh-import/regulador-ligacao-estrela.png -background white -geometry '450x290+8+8' -tile 2x2 /tmp/rl.png
+          convert /tmp/rl.png -resize '1000x700>' -background white -alpha remove -quality 43 mesh-sheets/regulador-ligacoes.jpg
+          jpegoptim --strip-all --force --size=22k mesh-sheets/*.jpg || true
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          out = Path('mesh-hex-chunks')
+          manifest=[]
+          chunk=10000
+          for p in sorted(Path('mesh-sheets').glob('*.jpg')):
+              raw=p.read_bytes()
+              hx=raw.hex().upper()
+              parts=[hx[i:i+chunk] for i in range(0,len(hx),chunk)]
+              dims=subprocess.check_output(['identify','-format','%w %h',str(p)],text=True).strip()
+              for n,part in enumerate(parts,1):
+                  (out/f'{p.stem}-{n:03d}.hex').write_text(part+'\n')
+              manifest.append(f'{p.stem} {dims} {len(parts)} {len(raw)}')
+          (out/'MANIFEST.txt').write_text('\n'.join(manifest)+'\n')
+          PY
+          cat mesh-hex-chunks/MANIFEST.txt
+
+      - name: Commit assets
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- mesh-import mesh-sheets mesh-hex-chunks
+          if git diff --cached --quiet; then
+            echo 'Nothing to commit'
+          else
+            git commit -m 'Temporary: create Mesh hex chunks'
+            git push origin HEAD:temp-fetch-mesh-images
+          fi
